@@ -68,16 +68,13 @@ int main(int argc, char* argv[])
 /* The thread will begin control in this function */
 void *runner(void *threadarg)
 {
-  double localSum;
   struct thread_data *thread_data = threadarg;
+  double *locSum = malloc(sizeof(double));
 
   int i;
   for(i=thread_data->start; i <= thread_data->end; i++){
-    localSum +=sqrt(i);
+    *locSum +=sqrt(i);
   }
- 
-  double *pres = malloc(sizeof(double));
-  *pres = localSum;
   
-  return (void *)pres;
+  return (void *)locSum;
 }
