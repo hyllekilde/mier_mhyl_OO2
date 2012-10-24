@@ -40,25 +40,26 @@ int main(int argc, char* argv[])
   printf("tNumber: %d\n",nThreads);
   printf("interval: %d\n",interval);
 
-  pthread_mutex_init(&mutexsum, NULL);
   start = clock();
 
   for(i = 0; i < nThreads; i++){
-    struct thread_data thread_data[i];
-    thread_data[i].start = (i*interval)+1;
-    thread_data[i].end = (1+i)*interval;
+    struct thread_data thread_data;
+    thread_data.start = (i*interval)+1;
+    thread_data.end = (1+i)*interval;
     pthread_attr_t attr; /* set of thread attributes */
     /* get the default attributes */
     pthread_attr_init(&attr);
     /* create the thread */
-    pthread_create(&tid[i],&attr,runner,&thread_data[i]);
+    pthread_create(&tid[i],&attr,runner,&thread_data);
   }
 
+    void *res;
   for(i = 0; i < nThreads; i++){
     /* wait for the thread to exit */
-    pthread_join(tid[i],NULL);
+    pthread_join(tid[i],&res);
+    sum += *(double *)res;
+    free(res);
   }
-  pthread_mutex_destroy(&mutexsum);
   finish = clock();
 
   printf("sum = %lf in %lf seconds\n",sum,(double)(finish-start)/CLOCKS_PER_SEC);
@@ -67,17 +68,16 @@ int main(int argc, char* argv[])
 /* The thread will begin control in this function */
 void *runner(void *threadarg)
 {
-  int i;
   double localSum;
   struct thread_data *thread_data = threadarg;
 
+  int i;
   for(i=thread_data->start; i <= thread_data->end; i++){
     localSum +=sqrt(i);
   }
+ 
+  double *pres = malloc(sizeof(double));
+  *pres = localSum;
   
-  pthread_mutex_lock(&mutexsum);
-  sum+=localSum;
-  pthread_mutex_unlock(&mutexsum);
-
-  pthread_exit(0);
+  return (void *)pres;
 }
