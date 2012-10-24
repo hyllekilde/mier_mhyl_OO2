@@ -24,19 +24,19 @@ int main(int argc, char* argv[])
   pthread_t tid[nThreads]; /* the thread identifier */
 
   if (argc !=3){
-    fprintf(stderr,"usage: a.out <inter value>\n");
+    fprintf(stderr,"usage: a.out #sum_to #num_threads\n");
     return -1;
   }
   if (atoi(argv[1]) < 0){
     fprintf(stderr, "%d must be >= 0\n",amount);
     return -1;
   }
-  if((atoi(argv[2]) % 2) != 0){
+  if((atoi(argv[2]) % 2) != 0){ //WHY?!
     fprintf(stderr,"The number of threads %d must be an equal number\n",nThreads);
     return -1;
   }
 
-  printf("max: %d\n",amount);
+  printf("sumNum: %d\n",amount);
   printf("tNumber: %d\n",nThreads);
   printf("interval: %d\n",interval);
 
