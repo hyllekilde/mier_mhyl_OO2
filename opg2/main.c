@@ -1,7 +1,7 @@
 /******************************************************************************
    main.c
 
-   Implementation of a simple FIFO buffer as a linked list defined in list.h.
+   Testing multithreaded FIFO queue
 
 ******************************************************************************/
 
@@ -13,19 +13,35 @@
 // FIFO list;
 List *fifo;
 
+void addNodes(char *mark,int count,List *l){
+  int i;
+  for(i=0; i<count; i++){
+    char *label;
+    sprintf(label,"%s%d",mark,i);
+    list_add(l, node_new_str(label));
+  }
+}
+
+void removeNodes(int count, List *l){
+  int i;
+  Node *n;
+  for(i=0; i<count; i++){
+    n = list_remove(l);
+    if(n != NULL)
+      printf("Removed element %s\n",n->elm);
+    else 
+      printf("Tried to remowe element from empty list\n");
+  }
+}
+
 int main(int argc, char* argv[])
 {
   fifo = list_new();
 
-  list_add(fifo, node_new_str("s1"));
-  list_add(fifo, node_new_str("s2"));
-
-  Node *n1 = list_remove(fifo);
-  if (n1 == NULL) { printf("Error no elements in list\n"); exit(-1);}
-  Node *n2 = list_remove(fifo);
-  if (n2 == NULL) { printf("Error no elements in list\n"); exit(-1);}
-  printf("%s\n%s\n", n1->elm, n2->elm);
+  addNodes("s", 10, fifo);
+  removeNodes(15, fifo);
 
   return 0;
 }
+
 

@@ -20,6 +20,7 @@ List *list_new(void)
   l->len = 0;
 
   /* insert root element which should never be removed */
+  //TODO: Why not use node_new function?
   l->first = l->last = (Node *) malloc(sizeof(Node));
   l->first->elm = NULL;
   l->first->next = NULL;
@@ -29,13 +30,19 @@ List *list_new(void)
 /* list_add: add node n to list l as the last element */
 void list_add(List *l, Node *n)
 {
+  l->last->next = n; //Make the last element point to the new node, which makes the new node the last node
+  l->last = n; //Tell the list about the new last node
+  l->len++;
 }
 
 /* list_remove: remove and return the first (non-root) element from list l */
 Node *list_remove(List *l)
 {
   Node *n;
-
+  if(l->len<1) return NULL;
+  n = l->first->next; //Get the firts node we want to remove (next node after the first, which is the empty node)
+  l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
+  l->len--;
   return n;
 }
 
