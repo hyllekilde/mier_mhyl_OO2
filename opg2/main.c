@@ -10,23 +10,37 @@
 #include <pthread.h>
 #include "list.h"
 
+struct add_nodes_data{
+  char *mark;
+  int count;
+  List *l;
+};
+
+struct remove_nodes_data{
+  int count;
+  List *l;
+};
+
 // FIFO list;
 List *fifo;
 
-void addNodes(char *mark,int count,List *l){
+void addNodes(void *data){
+  struct add_nodes_data *dat = data;
   int i;
-  for(i=0; i<count; i++){
+  for(i=0; i<dat->count; i++){
     char *label;
-    sprintf(label,"%s%d",mark,i);
-    list_add(l, node_new_str(label));
+    sprintf(label,"%s%d",dat->mark,i);
+    printf("Added element %s\n",label);
+    list_add(dat->l, node_new_str(label));
   }
 }
 
-void removeNodes(int count, List *l){
+void removeNodes(void *data){
+  struct remove_nodes_data *dat = data;
   int i;
   Node *n;
-  for(i=0; i<count; i++){
-    n = list_remove(l);
+  for(i=0; i<dat->count; i++){
+    n = list_remove(dat->l);
     if(n != NULL)
       printf("Removed element %s\n",n->elm);
     else 
@@ -38,7 +52,15 @@ int main(int argc, char* argv[])
 {
   fifo = list_new();
 
-  addNodes("s", 10, fifo);
+  struct add_nodes_data add_data;
+  add_data.mark =  "s";
+  add_data.count = 10;
+  add_data.l = fifo;
+  addNodes(add_data);
+  
+  struct remove_nodes_data rem_data;
+  rem_data.count = 10;
+  rem_data.l = fifo;
   removeNodes(15, fifo);
 
   return 0;
