@@ -24,7 +24,7 @@ struct remove_nodes_data{
 // FIFO list;
 List *fifo;
 
-void addNodes(void *data){
+void addnodes(void *data){
   struct add_nodes_data *dat = data;
   int i;
   for(i=0; i<dat->count; i++){
@@ -32,10 +32,11 @@ void addNodes(void *data){
     sprintf(label,"%s%d",dat->mark,i);
     printf("Added element %s\n",label);
     list_add(dat->l, node_new_str(label));
+    sleep(1);
   }
 }
 
-void removeNodes(void *data){
+void removenodes(void *data){
   struct remove_nodes_data *dat = data;
   int i;
   Node *n;
@@ -45,6 +46,7 @@ void removeNodes(void *data){
       printf("Removed element %s\n",n->elm);
     else 
       printf("Tried to remowe element from empty list\n");
+    sleep(3);
   }
 }
 
@@ -53,15 +55,24 @@ int main(int argc, char* argv[])
   fifo = list_new();
 
   struct add_nodes_data add_data;
+  int *tid1;
   add_data.mark =  "s";
   add_data.count = 14;
   add_data.l = fifo;
-  addNodes(&add_data);
-  
+  pthread_attr_t attr1;
+  pthread_attr_init(&attr1);
+  pthread_create(&tid1, &attr1, addnodes, &add_data);
+
   struct remove_nodes_data rem_data;
+  int *tid2;
   rem_data.count = 12;
   rem_data.l = fifo;
-  removeNodes(&rem_data);
+  pthread_attr_t attr2;
+  pthread_attr_init(&attr2);
+  pthread_create(&tid2, &attr2, removenodes, &rem_data);
+
+  pthread_join(tid1, NULL);
+  pthread_join(tid2, NULL);  
 
   return 0;
 }

@@ -18,6 +18,7 @@ typedef struct list {
   int len;
   Node *first;
   Node *last;
+  pthread_mutex_t lock;
 } List;
 
 /* functions */
