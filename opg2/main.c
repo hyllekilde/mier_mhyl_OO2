@@ -28,7 +28,7 @@ void addNodes(void *data){
   struct add_nodes_data *dat = data;
   int i;
   for(i=0; i<dat->count; i++){
-    char *label;
+    char label[50];
     sprintf(label,"%s%d",dat->mark,i);
     printf("Added element %s\n",label);
     list_add(dat->l, node_new_str(label));
@@ -54,14 +54,14 @@ int main(int argc, char* argv[])
 
   struct add_nodes_data add_data;
   add_data.mark =  "s";
-  add_data.count = 10;
+  add_data.count = 14;
   add_data.l = fifo;
-  addNodes(add_data);
+  addNodes(&add_data);
   
   struct remove_nodes_data rem_data;
-  rem_data.count = 10;
+  rem_data.count = 12;
   rem_data.l = fifo;
-  removeNodes(15, fifo);
+  removeNodes(&rem_data);
 
   return 0;
 }
