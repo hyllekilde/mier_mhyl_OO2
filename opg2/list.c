@@ -11,11 +11,14 @@
 #include <pthread.h>
 #include "list.h"
 
+pthread_mutex_t mutex;
+pthread_mutexattr_t attr;
 /* list_new: return a new list structure */
 List *list_new(void)
 {
   List *l;
-
+  pthread_mutexattr_init(&attr);
+  
   l = (List *) malloc(sizeof(List));
   l->len = 0;
 
@@ -24,29 +27,41 @@ List *list_new(void)
   l->first = l->last = (Node *) malloc(sizeof(Node));
   l->first->elm = NULL;
   l->first->next = NULL;
+ 
+  pthread_mutex_init(&mutex, &attr); //Initialize a lock for the specified list
   return l;
 }
 
 /* list_add: add node n to list l as the last element */
 void list_add(List *l, Node *n)
 {
-  pthread_mutex_lock(&l->lock);
+  pthread_mutex_lock(&mutex);
   l->last->next = n; //Make the last element point to the new node, which makes the new node the last node
   l->last = n; //Tell the list about the new last node
-  l->len++;
-  pthread_mutex_unlock(&l->lock);
+  l->len = l->len+1; //Increment the length of the list
+  printf("     Add: list length: %d\n", l->len);
+  pthread_mutex_unlock(&mutex);
 }
 
 /* list_remove: remove and return the first (non-root) element from list l */
 Node *list_remove(List *l)
 {
+  pthread_mutex_lock(&mutex);
   Node *n;
-  if(l->len<1) return NULL;
-  pthread_mutex_lock(&l->lock);
+  if((l->len)<1){ //If the list is empty
+    pthread_mutex_unlock(&mutex);
+    return NULL;
+  }else if((l->len)==1){ //If the list contains 1 node
+    n = l->first->next;
+    l->first->next = NULL;
+    l->last = l->first;
+  }else{ //If the list contains more than one node
   n = l->first->next; //Get the firts node we want to remove (next node after the first, which is the empty node)
   l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
-  l->len--;
-  pthread_mutex_unlock(&l->lock);
+  }
+  l->len = l->len-1; //Decrement the length of the list
+  printf("  Remove: list length: %d\n", l->len);
+  pthread_mutex_unlock(&mutex);
   return n;
 }
 

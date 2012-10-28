@@ -76,5 +76,5 @@ void *runner(void *threadarg)
     *locSum +=sqrt(i);
   }
   
-  return (void *)locSum;
+  return (void *) locSum;
 }
