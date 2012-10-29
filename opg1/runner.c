@@ -9,7 +9,6 @@ struct thread_data{
   int end;
 };
 
-pthread_mutex_t mutexsum;
 double sum; /* this data is shared by the threads */
 void *runner(void *threadarg); /* the thread */
 
