@@ -71,5 +71,5 @@ void *runner(void *threadarg)
     *locSum +=sqrt(i);
   }
   
-  return (void *) locSum;
+  pthread_exit((void *) locSum);
 }
