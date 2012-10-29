@@ -39,7 +39,6 @@ void list_add(List *l, Node *n)
   l->last->next = n; //Make the last element point to the new node, which makes the new node the last node
   l->last = n; //Tell the list about the new last node
   l->len = l->len+1; //Increment the length of the list
-  printf("     Add: list length: %d\n", l->len);
   pthread_mutex_unlock(&mutex);
 }
 
@@ -60,7 +59,6 @@ Node *list_remove(List *l)
   l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
   }
   l->len = l->len-1; //Decrement the length of the list
-  printf("  Remove: list length: %d\n", l->len);
   pthread_mutex_unlock(&mutex);
   return n;
 }
