@@ -46,7 +46,7 @@ Node *list_remove(List *l)
   pthread_mutex_lock(&l->lock);
   Node *n = l->first->next; //Get the first node we want to remove, if the list is not empty
   if((n == NULL) && (n ==l->last)){ //If the list is empty
-    //pthread_mutex_unlock(&l->lock);
+    pthread_mutex_unlock(&l->lock);
     return NULL;
   }else if((n->next) == NULL){ //If the list contains 1 node
     l->first->next = NULL;
