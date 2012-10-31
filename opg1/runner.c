@@ -9,7 +9,6 @@ struct thread_data{
   int end;
 };
 
-pthread_mutex_t mutexsum;
 double sum; /* this data is shared by the threads */
 void *runner(void *threadarg); /* the thread */
 
@@ -29,10 +28,6 @@ int main(int argc, char* argv[])
   }
   if (atoi(argv[1]) < 0){
     fprintf(stderr, "%d must be >= 0\n",amount);
-    return -1;
-  }
-  if((atoi(argv[2]) % 2) != 0){ //WHY?!
-    fprintf(stderr,"The number of threads %d must be an equal number\n",nThreads);
     return -1;
   }
 
@@ -76,5 +71,5 @@ void *runner(void *threadarg)
     *locSum +=sqrt(i);
   }
   
-  return (void *)locSum;
+  pthread_exit((void *) locSum);
 }
