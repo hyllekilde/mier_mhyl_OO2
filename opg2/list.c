@@ -48,7 +48,7 @@ Node *list_remove(List *l)
   if((n->next) == NULL){ //If the list contains 1 node
     l->first->next = NULL;
     l->last = l->first;
-  }else id((n->next->next) != NULL){ //If the list contains more than one node
+  }else if((n->next->next) != NULL){ //If the list contains more than one node
   l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
   }
   pthread_mutex_unlock(&l->lock);
