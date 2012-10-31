@@ -44,17 +44,18 @@ void list_add(List *l, Node *n)
 /* list_remove: remove and return the first (non-root) element from list l */
 Node *list_remove(List *l)
 {
-  pthread_mutex_lock(&l->lock);
+  //pthread_mutex_lock(&l->lock);
   Node *n;
+  n = node_new();
   if((l->len)<1){ //If the list is empty
-    pthread_mutex_unlock(&l->lock);
+    //pthread_mutex_unlock(&l->lock);
     return NULL;
-  }else{ //If the list contains more than one node
-    n = l->first->next; //Get the firts node we want to remove (next node after the first, which is the empty node)
-    l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
-  }
-  l->len--; //Decrement the length of the list
-  pthread_mutex_unlock(&l->lock);
+  }//else{ //If the list contains more than one node
+  //  n = l->first->next; //Get the firts node we want to remove (next node after the first, which is the empty node)
+  //  l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
+  //}
+  //l->len--; //Decrement the length of the list
+  //pthread_mutex_unlock(&l->lock);
   return n;
 }
 

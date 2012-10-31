@@ -41,7 +41,7 @@ void *consume(void *data){
       printf("Consumed: \"%s\"\n",n->elm);
     else
       printf("Tried to remove from empty list\n");
-    randsleepms(500);
+    randsleepms(2000);
   }
 }
 
@@ -58,7 +58,7 @@ void *produce(void *data){
     sprintf(nodedata, "Element %d from thread %d", count_produced, dat->num);
     list_add(dat->l, node_new_str(nodedata));
     //sem_post(&full);
-    randsleepms(500);
+    randsleepms(2000);
     pthread_mutex_lock(&produced_lock);
     count_produced = produced;
     produced++;
