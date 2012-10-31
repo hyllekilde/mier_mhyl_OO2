@@ -18,7 +18,6 @@ List *list_new(void)
   List *l;
   
   l = (List *) malloc(sizeof(List));
-  //l->len = 0;
 
   /* insert root element which should never be removed */
   //TODO: Why not use node_new function?
@@ -38,7 +37,6 @@ void list_add(List *l, Node *n)
   pthread_mutex_lock(&l->lock);
   l->last->next = n; //Make the last element point to the new node, which makes the new node the last node
   l->last = n; //Tell the list about the new last node
-  //l->len = l->len+1; //Increment the length of the list
   pthread_mutex_unlock(&l->lock);
 }
 
@@ -58,7 +56,6 @@ Node *list_remove(List *l)
   n = l->first->next; //Get the firts node we want to remove (next node after the first, which is the empty node)
   l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
   }
-  //l->len = l->len-1; //Decrement the length of the list
   pthread_mutex_unlock(&l->lock);
   return n;
 }
