@@ -3,6 +3,7 @@
 
    Implementation of simple linked list defined in list.h.
 
+
 ******************************************************************************/
 
 #include <stdio.h>
@@ -17,7 +18,6 @@ List *list_new(void)
   List *l;
   
   l = (List *) malloc(sizeof(List));
-  l->len = 0;
 
   /* insert root element which should never be removed */
   //TODO: Why not use node_new function?
@@ -34,28 +34,35 @@ List *list_new(void)
 /* list_add: add node n to list l as the last element */
 void list_add(List *l, Node *n)
 {
+  if(&l == null)
+  {
+    printf("Illegal pass of NULL as list to list_add!");
+    return;
+  }
+  if(n==NULL) return; //Not allowed to add NULL elements - ignore
   pthread_mutex_lock(&l->lock);
   l->last->next = n; //Make the last element point to the new node, which makes the new node the last node
   l->last = n; //Tell the list about the new last node
-  l->len++; //Increment the length of the list
+  l->len++; //Count the length 1 up
   pthread_mutex_unlock(&l->lock);
 }
 
 /* list_remove: remove and return the first (non-root) element from list l */
 Node *list_remove(List *l)
 {
-  //pthread_mutex_lock(&l->lock);
-  Node *n;
-  n = node_new();
-  if((l->len)<1){ //If the list is empty
-    //pthread_mutex_unlock(&l->lock);
+  if(&l == null)
+  {
+    printf("Illegal pass of NULL as list to list_remove!");
     return NULL;
-  }//else{ //If the list contains more than one node
-  //  n = l->first->next; //Get the firts node we want to remove (next node after the first, which is the empty node)
-  //  l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
-  //}
-  //l->len--; //Decrement the length of the list
-  //pthread_mutex_unlock(&l->lock);
+  }
+  pthread_mutex_lock(&l->lock);
+  Node *n = l->first->next; //Get the result, eg. first node after first, NULL if the list is empty
+  if(n != NULL)
+  {
+    l->first->next = n->next; //Make the first point to the next element after the element we remove
+    l->len--; //Count the length 1 down
+  }
+  pthread_mutex_unlock(&l->lock);
   return n;
 }
 
