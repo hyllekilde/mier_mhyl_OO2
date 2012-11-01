@@ -30,12 +30,14 @@ void Sleep(float wait_time_ms)
    results in a safe state and return 1, else return 0 */
 int resource_request(int i, int *request)
 {
+  //TODO: Implement with bankers algorithm
   return 0;
 }
 
 /* Release the resources in request for process i */
 void resource_release(int i, int *request)
 {
+  //TODO: Implement this
 }
 
 /* Generate a request vector */
@@ -114,6 +116,8 @@ void print_matrix(int** ma, int m, int n){
 
 int main(int argc, char* argv[])
 {
+  //TODO: Read the file in?
+
   /* Get size of current state as input */
   int i, j; //Initialize counting variables
   scanf("%d", &m); //Read m (number of processes)
@@ -180,12 +184,12 @@ int main(int argc, char* argv[])
   struct timeval tv;
   gettimeofday(&tv, NULL);
   srand(tv.tv_usec);
-  
+
   /* Create m threads */
   pthread_t *tid = malloc(m*sizeof(pthread_t));
   for (i = 0; i < m; i++)
     pthread_create(&tid[i], NULL, process_thread, (void *) (long) i);
-  
+
   /* Wait for threads to finish */
   pthread_exit(0);
   free(tid);
@@ -199,3 +203,5 @@ int main(int argc, char* argv[])
   free(s->need);
   free(s);
 }
+
+//TODO: Implement print_vector and print_matrix

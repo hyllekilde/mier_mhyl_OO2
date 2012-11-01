@@ -34,23 +34,36 @@ List *list_new(void)
 /* list_add: add node n to list l as the last element */
 void list_add(List *l, Node *n)
 {
+  if(&l == NULL)
+  {
+    printf("Illegal pass of NULL as list to list_add!");
+    return;
+  }
+  //printf("##Running list_add on list l length %d\n",l->len);
+  if(n==NULL) return; //Not allowed to add NULL elements - ignore
   pthread_mutex_lock(&l->lock);
   l->last->next = n; //Make the last element point to the new node, which makes the new node the last node
   l->last = n; //Tell the list about the new last node
+  l->len++; //Count the length 1 up
   pthread_mutex_unlock(&l->lock);
 }
 
 /* list_remove: remove and return the first (non-root) element from list l */
 Node *list_remove(List *l)
 {
-  pthread_mutex_lock(&l->lock);
-  Node *n = l->first->next; //Get the first node we want to remove, if the list is not empty
-  if((n->next) == NULL){ //If the list contains 1 node
-    l->first->next = NULL;
-    l->last = l->first;
-  }else if((n->next->next) != NULL){ //If the list contains more than one node
-  l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
+  if(&l == NULL)
+  {
+    printf("Illegal pass of NULL as list to list_remove!");
+    return NULL;
   }
+  pthread_mutex_lock(&l->lock);
+  Node *n = l->first->next; //Get the result, eg. first node after first, NULL if the list is empty
+  if(n != NULL)
+  {
+    l->first->next = n->next; //Make the first point to the next element after the element we remove
+    l->len--; //Count the length 1 down
+  }
+  if(l->last == n) l->last = l->first; //Make sure that we point last to initial element when removing last "real" element
   pthread_mutex_unlock(&l->lock);
   return n;
 }

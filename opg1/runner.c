@@ -65,6 +65,7 @@ void *runner(void *threadarg)
 {
   struct thread_data *thread_data = threadarg;
   double *locSum = malloc(sizeof(double));
+  *locSum = 0;
 
   int i;
   for(i=thread_data->start; i <= thread_data->end; i++){

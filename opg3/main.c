@@ -32,38 +32,38 @@ void randsleepms(float wait_time_ms){
 
 void *consume(void *data){
   struct thread_data *dat = data;
-  while(1==1){
+  while(produced <= producemax){
     Node *n;
-    //sem_wait(&full);
+    sem_wait(&full);
     n = list_remove(dat->l);
-    //sem_post(&empty);
+    sem_post(&empty);
     if(n!=NULL) 
-      printf("Consumed: \"%s\"\n",n->elm);
+      printf("Consumed (tid: %d): \"%s\"\n",(unsigned int) pthread_self(),n->elm);
     else
       printf("Tried to remove from empty list\n");
     randsleepms(2000);
   }
+  printf("Thread (pid: %d) successfully assisted in consuming %d elements\n",(unsigned int) pthread_self(),producemax);
 }
 
 void *produce(void *data){
   struct thread_data *dat = data;
   pthread_mutex_lock(&produced_lock);
-  int count_produced = produced;
-  produced++;
+  int count_produced = produced++;
   pthread_mutex_unlock(&produced_lock);
   while(count_produced < producemax){
-    //sem_wait(&empty);
-    printf("Producing (tid: %d): %d - %d\n",(unsigned int) pthread_self(),dat->num,count_produced);
+    sem_wait(&empty);
     char nodedata[30];
     sprintf(nodedata, "Element %d from thread %d", count_produced, dat->num);
+    printf("Producing (tid: %d): \"%s\"\n",(unsigned int) pthread_self(),nodedata);
     list_add(dat->l, node_new_str(nodedata));
-    //sem_post(&full);
+    sem_post(&full);
     randsleepms(2000);
     pthread_mutex_lock(&produced_lock);
-    count_produced = produced;
-    produced++;
+    count_produced = produced++;
     pthread_mutex_unlock(&produced_lock);
   }
+  printf("Thread (pid: %d) successfully assisted in producing %d elements\n",(unsigned int) pthread_self(),producemax);
 }
 
 int main(int argc, char* argv[])
