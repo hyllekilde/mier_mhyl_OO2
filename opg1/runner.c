@@ -4,17 +4,18 @@
 #include <time.h>
 #include <stdlib.h>
 
+pthread_mutex_t sum_lock;
+
 struct thread_data{
   int start;
   int end;
 };
 
-double sum; /* this data is shared by the threads */
+long double sum; /* this data is shared by the threads */
 void *runner(void *threadarg); /* the thread */
 
 int main(int argc, char* argv[])
 {
-  
   clock_t start, finish;
   int amount = atoi(argv[1]);
   int nThreads = atoi(argv[2]);
@@ -26,14 +27,24 @@ int main(int argc, char* argv[])
     fprintf(stderr,"usage: a.out #sum_to #num_threads\n");
     return -1;
   }
-  if (atoi(argv[1]) < 0){
-    fprintf(stderr, "%d must be >= 0\n",amount);
+  if (amount < 1){
+    fprintf(stderr, "first argument must be > 0\n");
+    return -1;
+  }
+  if (nThreads < 1){
+    fprintf(stderr, "second argument must be > 0\n");
+    return -1;
+  }
+  if (amount % nThreads > 0){
+    fprintf(stderr, "Secound argument must be a divisor for first argument!\n");
     return -1;
   }
 
   printf("sumNum: %d\n",amount);
   printf("tNumber: %d\n",nThreads);
   printf("interval: %d\n",interval);
+
+  sum = 0.0;
 
   start = clock();
 
@@ -48,23 +59,21 @@ int main(int argc, char* argv[])
     pthread_create(&tid[i],&attr,runner,&thread_data);
   }
 
-    void *res;
+  /* wait for the threads to exit */
   for(i = 0; i < nThreads; i++){
-    /* wait for the thread to exit */
-    pthread_join(tid[i],&res);
-    sum += *(double *)res;
-    free(res);
+    pthread_join(tid[i],NULL);
   }
   finish = clock();
 
-  printf("sum = %lf in %lf seconds\n",sum,(double)(finish-start)/CLOCKS_PER_SEC);
+  printf("sum = %3lf in %3lf seconds\n",(double)sum,(double)(finish-start)/CLOCKS_PER_SEC);
+  exit(0);
 }
 
 /* The thread will begin control in this function */
 void *runner(void *threadarg)
 {
   struct thread_data *thread_data = threadarg;
-  double *locSum = malloc(sizeof(double));
+  long double *locSum = malloc(sizeof(long double));
   *locSum = 0;
 
   int i;
@@ -72,5 +81,8 @@ void *runner(void *threadarg)
     *locSum +=sqrt(i);
   }
   
-  pthread_exit((void *) locSum);
+  pthread_mutex_lock(&sum_lock);
+  sum += *locSum;
+  pthread_mutex_unlock(&sum_lock);
+  pthread_exit(0);
 }
