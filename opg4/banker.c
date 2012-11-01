@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
@@ -92,6 +93,7 @@ int is_safe_bankers(){
   for(i=0; i<m; i++)
     if(finish[i] == 0) res = 0;
 
+  //Free allocated variables
   free(finish);
   free(work);
 
@@ -114,10 +116,6 @@ int find_banker_i(int *work, int *finish){
 int resource_request(int i, int *request)
 {
   pthread_mutex_lock(&state_mutex);
-
-  /*if(!cmpvector(request,s->need[i],n)){
-    printf("Request contained more resources than allowed for the process\n");
-    }*/
 
   //if the request resources is less than or equal to the available resources, allocate resources
   if(all_less_equal(request,s->available,n) == 1){
@@ -162,7 +160,7 @@ void generate_request(int i, int *request)
   int j, sum = 0;
   while (!sum) {
     for (j = 0;j < n; j++) {
-      request[j] = (double)s->need[i][j] * ((double)rand()) / (double)RAND_MAX;
+      request[j] = round((double)s->need[i][j] * ((double)rand()) / (double)RAND_MAX);
       sum += request[j];
     }
   }
@@ -175,7 +173,7 @@ void generate_release(int i, int *request)
   int j, sum = 0;
   while (!sum) {
     for (j = 0;j < n; j++) {
-      request[j] = (double)s->need[i][j]*((double)rand())/ (double)RAND_MAX;
+      request[j] = round((double)s->need[i][j]*((double)rand())/ (double)RAND_MAX);
       sum += request[j];
     }
   }
@@ -186,7 +184,7 @@ void generate_release(int i, int *request)
 void *process_thread(void *param)
 {
   /* Process number */
-  int i = (int) (long) param, j; //TODO: What is j?!?!
+  int i = (int) (long) param;
   /* Allocate request vector */
   int *request = malloc(n*sizeof(int));
   while (1) {
