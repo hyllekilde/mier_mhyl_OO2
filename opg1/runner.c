@@ -49,14 +49,15 @@ int main(int argc, char* argv[])
   start = clock();
 
   for(i = 0; i < nThreads; i++){
-    struct thread_data thread_data;
-    thread_data.start = (i*interval)+1;
-    thread_data.end = (1+i)*interval;
+    struct thread_data *thread_data;
+    thread_data = malloc(sizeof(struct thread_data));
+    thread_data->start = (i*interval)+1;
+    thread_data->end = (1+i)*interval;
     pthread_attr_t attr; /* set of thread attributes */
     /* get the default attributes */
     pthread_attr_init(&attr);
     /* create the thread */
-    pthread_create(&tid[i],&attr,runner,&thread_data);
+    pthread_create(&tid[i],&attr,runner,thread_data);
   }
 
   /* wait for the threads to exit */
