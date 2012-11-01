@@ -29,6 +29,37 @@ void Sleep(float wait_time_ms)
   usleep((int) (wait_time_ms * 1e3f)); // convert from ms to us
 }
 
+
+
+int** allocate_matrix(int m, int n){
+  int** matrix = malloc(m * sizeof(int*));
+  int i;
+  for(i=0; i<m; i++){
+    matrix[i] = malloc(n * sizeof(int));
+  }
+  return matrix;
+}
+
+void print_vector(int* v){
+  int i;
+  printf("[");
+  for(i=0; i<n; i++)
+    printf("%2d ",v[i]);
+  printf("]\n");
+}
+
+void print_matrix(int** ma){
+  int i;
+  for(i=0; i<m; i++){
+    print_vector(ma[i]);
+  }
+}
+
+void free_matrix(int** matrix){
+  free(*matrix);
+  free(matrix);
+}
+
 /* Is this state safe according to bankers algorithm? Returns 1 if yes, 0 if no */
 int is_safe_bankers(){
   //Initialize variables
@@ -181,35 +212,6 @@ void *process_thread(void *param)
     Sleep(1000);
   }
   free(request);
-}
-
-int** allocate_matrix(int m, int n){
-  int** matrix = malloc(m * sizeof(int*));
-  int i;
-  for(i=0; i<m; i++){
-    matrix[i] = malloc(n * sizeof(int));
-  }
-  return matrix;
-}
-
-void print_vector(int* v){
-  int i;
-  printf("[");
-  for(i=0; i<n; i++)
-    printf("%2d ",v[i]);
-  printf("]\n");
-}
-
-void print_matrix(int** ma){
-  int i;
-  for(i=0; i<m; i++){
-    print_vector(ma[i]);
-  }
-}
-
-void free_matrix(int** matrix){
-  free(*matrix);
-  free(matrix);
 }
 
 int main(int argc, char* argv[])
