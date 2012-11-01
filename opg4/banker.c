@@ -30,12 +30,14 @@ void Sleep(float wait_time_ms)
    results in a safe state and return 1, else return 0 */
 int resource_request(int i, int *request)
 {
+  //TODO: Implement with bankers algorithm
   return 0;
 }
 
 /* Release the resources in request for process i */
 void resource_release(int i, int *request)
 {
+  //TODO: Implement this
 }
 
 /* Generate a request vector */
@@ -90,6 +92,8 @@ void *process_thread(void *param)
 
 int main(int argc, char* argv[])
 {
+  //TODO: Read the file in?
+
   /* Get size of current state as input */
   int i, j;
   printf("Number of processes: ");
@@ -164,3 +168,5 @@ int main(int argc, char* argv[])
 
   /* Free state memory */
 }
+
+//TODO: Implement print_vector and print_matrix
