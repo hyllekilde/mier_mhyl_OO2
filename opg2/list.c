@@ -44,13 +44,8 @@ void list_add(List *l, Node *n)
 Node *list_remove(List *l)
 {
   pthread_mutex_lock(&l->lock);
-  Node *n = l->first->next; //Get the first node we want to remove, if the list is not empty
-  if((n->next) == NULL){ //If the list contains 1 node
-    l->first->next = NULL;
-    l->last = l->first;
-  }else if((n->next->next) != NULL){ //If the list contains more than one node
-  l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
-  }
+  Node *n = l->first->next; //Get the result, eg. first node after first, NULL if the list is empty
+  if(n != NULL) l->first->next = n->next; //Make the first point to the next element after the element we remove
   pthread_mutex_unlock(&l->lock);
   return n;
 }
