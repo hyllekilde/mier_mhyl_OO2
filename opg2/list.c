@@ -34,6 +34,11 @@ List *list_new(void)
 /* list_add: add node n to list l as the last element */
 void list_add(List *l, Node *n)
 {
+  if(&l == null)
+  {
+    printf("Illegal pass of NULL as list to list_add!");
+    return;
+  }
   if(n==NULL) return; //Not allowed to add NULL elements - ignore
   pthread_mutex_lock(&l->lock);
   l->last->next = n; //Make the last element point to the new node, which makes the new node the last node
@@ -45,6 +50,11 @@ void list_add(List *l, Node *n)
 /* list_remove: remove and return the first (non-root) element from list l */
 Node *list_remove(List *l)
 {
+  if(&l == null)
+  {
+    printf("Illegal pass of NULL as list to list_remove!");
+    return NULL;
+  }
   pthread_mutex_lock(&l->lock);
   Node *n = l->first->next; //Get the result, eg. first node after first, NULL if the list is empty
   if(n != NULL)
