@@ -87,6 +87,11 @@ int main(int argc, char* argv[])
 
   pthread_t tids[producers+consumers];
 
+  /* Seed the random number generator */
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_usec);
+
   for(i = 0; i < producers; i++){
     struct thread_data *data;
     data = malloc(sizeof(struct thread_data));
