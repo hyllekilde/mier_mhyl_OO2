@@ -58,6 +58,14 @@ void free_matrix(int** matrix){
   free(matrix);
 }
 
+//Compare the two vectors. Return 0 if the first is smaller or equal to the second, or else return 1
+int cmpvector(int *vec1, int *vec2, int l){
+  int i;
+  for(i=0; i<l;i++)
+    if(vec1[i]>vec2[i]) return 0;
+  return 1;
+}
+
 /* Is this state safe according to bankers algorithm? Returns 1 if yes, 0 if no */
 int is_safe_bankers(){
   //Initialize variables
@@ -136,14 +144,6 @@ int resource_request(int i, int *request)
 
   pthread_mutex_unlock(&state_mutex);
   return 0;
-}
-
-//Compare the two vectors. Return 0 if the first is smaller or equal to the second, or else return 1
-int cmpvector(int *vec1, int *vec2, int l){
-  int i;
-  for(i=0; i<l;i++)
-    if(vec1[i]>vec2[i]) return 0;
-  return 1;
 }
 
 /* Release the resources in request for process i */
