@@ -58,8 +58,8 @@ void free_matrix(int** matrix){
   free(matrix);
 }
 
-//Compare the two vectors. Return 0 if the first is smaller or equal to the second, or else return 1
-int cmpvector(int *vec1, int *vec2, int l){
+//Compare the two vectors. Return 1 if all elements in first is smaller or equal to elements in second, or else return 0
+int all_less_equal(int *vec1, int *vec2, int l){
   int i;
   for(i=0; i<l;i++)
     if(vec1[i]>vec2[i]) return 0;
@@ -103,12 +103,8 @@ int is_safe_bankers(){
 int find_banker_i(int *work, int *finish){
   int i;
   int j;
-  int need_cond;
   for(i=0; i<m; i++){
-    need_cond = 1;
-    for(j=0; j<n; j++)
-      if(s->need[i][j] > work[j]) need_cond = 0;
-    if(finish[i] == 0 && need_cond) return i;
+    if(finish[i] == 0 && all_less_equal(s->need[i],work,n)==1) return i;
   }
   return -1;
 }
@@ -124,7 +120,7 @@ int resource_request(int i, int *request)
     }*/
 
   //if the request resources is less than or equal to the available resources, allocate resources
-  if(cmpvector(request,s->available,n) == 1){
+  if(all_less_equal(request,s->available,n) == 1){
     int j;
     for(j=0;j<n;j++){
       s->available[j] -= request[j];
