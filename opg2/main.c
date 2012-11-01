@@ -26,6 +26,7 @@ struct remove_nodes_data{
 // FIFO list;
 List *fifo;
 
+//Add nodes to the list
 void *addnodes(void *data){
   struct add_nodes_data *dat = data;
   int i;
@@ -39,6 +40,7 @@ void *addnodes(void *data){
   }
 }
 
+//Remove nodes from the list
 void *removenodes(void *data){
   struct remove_nodes_data *dat = data;
   int i;
@@ -55,6 +57,7 @@ void *removenodes(void *data){
 
 int main(int argc, char* argv[])
 {
+  //Initialize a new list
   fifo = list_new();
 
   //Set data and create thread 1
