@@ -29,8 +29,6 @@ void Sleep(float wait_time_ms)
   usleep((int) (wait_time_ms * 1e3f)); // convert from ms to us
 }
 
-
-
 int** allocate_matrix(int m, int n){
   int** matrix = malloc(m * sizeof(int*));
   int i;
@@ -79,8 +77,6 @@ int is_safe_bankers(){
     finish[i] = 1;
     for(j=0; j<n; j++)
       work[j] += s->allocation[i][j];
-    print_matrix(work);
-    print_vector(finish);  
     i = find_banker_i(work,finish);
   }
 
@@ -103,7 +99,7 @@ int find_banker_i(int *work, int *finish){
   for(i=0; i<m; i++){
     need_cond = 1;
     for(j=0; j<n; j++)
-      if(s->need[i][j] >= work[j]) need_cond = 0;
+      if(s->need[i][j] > work[j]) need_cond = 0;
     if(finish[i] == 0 && need_cond) return i;
   }
   return -1;
