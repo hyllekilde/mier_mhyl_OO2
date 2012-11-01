@@ -45,17 +45,17 @@ int is_safe_bankers(){
   //Run bankers algorithm
   i = find_banker_i(work,finish);
   while(i != -1){
-  finish[i] = 1;
-  for(j=0; j<n; j++)
-  work[j] += s->allocation[i][j];  
-  //print_vector(work);
-  i = find_banker_i(work,finish);
+    finish[i] = 1;
+    for(j=0; j<n; j++)
+      work[j] += s->allocation[i][j];
+    print_matrix(work);
+    print_vector(finish);  
+    i = find_banker_i(work,finish);
   }
 
   //Read the result and return
-  for(i=0; i<m; i++){
-  if(finish[i] == 0) res = 0;
-  }
+  for(i=0; i<m; i++)
+    if(finish[i] == 0) res = 0;
 
   free(finish);
   free(work);
