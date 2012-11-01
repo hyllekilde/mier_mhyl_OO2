@@ -50,11 +50,11 @@ Node *list_remove(List *l)
   if((l->len)<1){ //If the list is empty
     //pthread_mutex_unlock(&l->lock);
     return NULL;
-  }//else{ //If the list contains more than one node
-  //  n = l->first->next; //Get the firts node we want to remove (next node after the first, which is the empty node)
-  //  l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
-  //}
-  //l->len--; //Decrement the length of the list
+  }else{ //If the list contains more than one node
+    n = l->first->next; //Get the firts node we want to remove (next node after the first, which is the empty node)
+    l->first->next = n->next; //Remove the node by pointing the first node to the next node after the node that we are removing
+  }
+  l->len--; //Decrement the length of the list
   //pthread_mutex_unlock(&l->lock);
   return n;
 }

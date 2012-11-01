@@ -68,7 +68,7 @@ void generate_release(int i, int *request)
 void *process_thread(void *param)
 {
   /* Process number */
-  int i = (int) (long) param, j;
+  int i = (int) (long) param, j; //TODO: What is j?!?!
   /* Allocate request vector */
   int *request = malloc(n*sizeof(int));
   while (1) {
@@ -88,31 +88,69 @@ void *process_thread(void *param)
   free(request);
 }
 
+int** allocate_matrix(int m, int n){
+  int** matrix = malloc(m * sizeof(int*));
+  int i;
+  for(i=0; i<m; i++){
+    matrix[i] = malloc(n * sizeof(int));
+  }
+  return matrix;
+}
+
+void print_vector(int* v, int n){
+  int i;
+  printf("[");
+  for(i=0; i<n; i++)
+    printf("%2d ",v[i]);
+  printf("]\n");
+}
+
+void print_matrix(int** ma, int m, int n){
+  int i;
+  for(i=0; i<m; i++){
+    print_vector(ma[i],n);
+  }
+}
+
 int main(int argc, char* argv[])
 {
   /* Get size of current state as input */
-  int i, j;
-  printf("Number of processes: ");
-  scanf("%d", &m);
-  printf("Number of resources: ");
-  scanf("%d", &n);
+  int i, j; //Initialize counting variables
+  scanf("%d", &m); //Read m (number of processes)
+  scanf("%d", &n); //Read n (number of resources)
 
   /* Allocate memory for state */
+  s = (State *) malloc(sizeof(State));
+  s->resource = (int *) malloc(n*sizeof(int));
+  s->available = (int *) malloc(n*sizeof(int));
+  s->max = allocate_matrix(m,n);
+  s->allocation = allocate_matrix(m,n);
+  s->need = allocate_matrix(m,n);
   if (s == NULL) { printf("\nYou need to allocate memory for the state!\n"); exit(0); };
 
   /* Get current state as input */
-  printf("Resource vector: ");
   for(i = 0; i < n; i++)
     scanf("%d", &s->resource[i]);
-  printf("Enter max matrix: ");
+  
   for(i = 0;i < m; i++)
     for(j = 0;j < n; j++)
       scanf("%d", &s->max[i][j]);
-  printf("Enter allocation matrix: ");
+  
   for(i = 0; i < m; i++)
     for(j = 0; j < n; j++) {
       scanf("%d", &s->allocation[i][j]);
     }
+
+  //Print input
+  printf("##INPUT##\n");
+  printf("Processes: %d\n",m);
+  printf("Resources: %d\n",n);
+  printf("Resource vector:\n");
+  print_vector(s->resource,n);
+  printf("Max matrix:\n");
+  print_matrix(s->max,m,n);
+  printf("Allocation matrix:\n");
+  print_matrix(s->allocation,m,n);
   printf("\n");
 
   /* Calcuate the need matrix */
@@ -121,32 +159,22 @@ int main(int argc, char* argv[])
       s->need[i][j] = s->max[i][j]-s->allocation[i][j];
 
   /* Calcuate the availability vector */
-  for(j = 0; j < n; j++) {
+  for(i = 0; i < n; i++) {
     int sum = 0;
-    for(i = 0; i < m; i++)
-      sum += s->allocation[i][j];
-    s->available[j] = s->resource[j] - sum;
+    for(j = 0; j < m; j++)
+      sum += s->allocation[j][i];
+    s->available[i] = s->resource[i] - sum;
   }
 
-  /* Output need matrix and availability vector */
+  //Print calculations
+  printf("##CALCULATIONS##\n");
   printf("Need matrix:\n");
-  for(i = 0; i < n; i++)
-    printf("R%d ", i+1);
-  printf("\n");
-  for(i = 0; i < m; i++) {
-    for(j = 0; j < n; j++)
-      printf("%d  ",s->need[i][j]);
-    printf("\n");
-  }
-  printf("Availability vector:\n");
-  for(i = 0; i < n; i++)
-    printf("R%d ", i+1);
-  printf("\n");
-  for(j = 0; j < n; j++)
-    printf("%d  ",s->available[j]);
-  printf("\n");
+  print_matrix(s->need,m,n);
+  printf("Available vector:\n");
+  print_vector(s->available,n);
 
   /* If initial state is unsafe then terminate with error */
+  //TODO: Implement with bankers algorithm...
 
   /* Seed the random number generator */
   struct timeval tv;
@@ -163,4 +191,11 @@ int main(int argc, char* argv[])
   free(tid);
 
   /* Free state memory */
+  //TODO: Should free be more extensive
+  free(s->resource);
+  free(s->available);
+  free(s->max);
+  free(s->allocation);
+  free(s->need);
+  free(s);
 }
