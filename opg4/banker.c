@@ -1,9 +1,11 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <pthread.h>
-
+#include <math.h>
+#include <stdbool.h>
+#include <unistd.h>
 typedef struct state {
   int *resource;
   int *available;
@@ -18,7 +20,7 @@ State *s = NULL;
 
 // Mutex for access to state.
 pthread_mutex_t state_mutex;
-
+pthread_mutexattr_t attr;
 /* Random sleep function */
 void Sleep(float wait_time_ms)
 {
@@ -34,30 +36,35 @@ int is_safe_bankers(){
   int j;
   int *work;
   int *finish;
-  work = malloc(n*sizeof(int));
+  int res = 1;
+  work =  malloc(n*sizeof(int));
   memcpy(work, s->available, n*sizeof(int));
-  finish = malloc(m*sizeof(int));
+  finish =  malloc(m*sizeof(int));
   for(i=0; i<m; i++) finish[i] = 0;
 
   //Run bankers algorithm
   i = find_banker_i(work,finish);
   while(i != -1){
-    finish[i] = 1;
-    for(j=0; j<n; j++)
-      work[j] += s->allocation[i][j];  
-    //print_vector(work);
-    i = find_banker_i(work,finish);
+  finish[i] = 1;
+  for(j=0; j<n; j++)
+  work[j] += s->allocation[i][j];  
+  //print_vector(work);
+  i = find_banker_i(work,finish);
   }
 
   //Read the result and return
   for(i=0; i<m; i++){
-   if(finish[i] == 0) return 0;
+  if(finish[i] == 0) res = 0;
   }
-  return 1;
+
+  free(finish);
+  free(work);
+
+  return res;
 }
 
 /* Return an index that satisfies condition 2 in bankers 
-algorithm, if no such index is found, return -1 */
+   algorithm, if no such index is found, return -1 */
 int find_banker_i(int *work, int *finish){
   int i;
   int j;
@@ -75,14 +82,55 @@ int find_banker_i(int *work, int *finish){
    results in a safe state and return 1, else return 0 */
 int resource_request(int i, int *request)
 {
-  //TODO: Implement with bankers algorithm
+  pthread_mutex_lock(&state_mutex);
+
+  /*if(!cmpvector(request,s->need[i],n)){
+    printf("Request contained more resources than allowed for the process\n");
+    }*/
+
+  //if the request resources is less than or equal to the available resources, allocate resources
+  if(cmpvector(request,s->available,n) == 1){
+    int j;
+    for(j=0;j<n;j++){
+      s->available[j] -= request[j];
+      s->allocation[i][j] += request[j];
+      s->need[i][j] -= request[j];
+    }
+    //If state is safe - Return 1 and keep the resources allocated
+    if(is_safe_bankers() == 1){
+      pthread_mutex_unlock(&state_mutex);
+      return 1;
+    }else{ //Undo the tentative allocation
+      s->available[j] += request[j];
+      s->allocation[i][j] -= request[j];
+      s->need[i][j] += request[j];
+    }
+  }
+
+  pthread_mutex_unlock(&state_mutex);
   return 0;
+}
+
+//Compare the two vectors. Return 0 if the first is smaller or equal to the second, or else return 1
+int cmpvector(int *vec1, int *vec2, int l){
+  int i;
+  for(i=0; i<l;i++)
+    if(vec1[i]>vec2[i]) return 0;
+  return 1;
 }
 
 /* Release the resources in request for process i */
 void resource_release(int i, int *request)
 {
-  //TODO: Implement this
+  pthread_mutex_lock(&state_mutex);
+
+  int j;
+  for(j=0;j<n;j++){
+    s->available[j] += request[j];
+    s->allocation[i][j] -= request[j];
+    s->need[i][j] += request[j];
+  }
+  pthread_mutex_unlock(&state_mutex);
 }
 
 /* Generate a request vector */
@@ -91,7 +139,7 @@ void generate_request(int i, int *request)
   int j, sum = 0;
   while (!sum) {
     for (j = 0;j < n; j++) {
-      request[j] = s->need[i][j] * ((double)rand())/ (double)RAND_MAX;
+      request[j] = (double)s->need[i][j] * ((double)rand()) / (double)RAND_MAX;
       sum += request[j];
     }
   }
@@ -104,7 +152,7 @@ void generate_release(int i, int *request)
   int j, sum = 0;
   while (!sum) {
     for (j = 0;j < n; j++) {
-      request[j] = s->allocation[i][j] * ((double)rand())/ (double)RAND_MAX;
+      request[j] = (double)s->need[i][j]*((double)rand())/ (double)RAND_MAX;
       sum += request[j];
     }
   }
@@ -159,8 +207,15 @@ void print_matrix(int** ma){
   }
 }
 
+void free_matrix(int** matrix){
+  free(*matrix);
+  free(matrix);
+}
+
 int main(int argc, char* argv[])
-{ 
+{
+  pthread_mutexattr_init(&attr);
+  pthread_mutex_init(&state_mutex,&attr);
   int i, j; //Initialize counting variables
   scanf("%d", &m); //Read m (number of processes)
   scanf("%d", &n); //Read n (number of resources)
@@ -177,11 +232,11 @@ int main(int argc, char* argv[])
   /* Get current state as input */
   for(i = 0; i < n; i++)
     scanf("%d", &s->resource[i]);
-  
+
   for(i = 0;i < m; i++)
     for(j = 0;j < n; j++)
       scanf("%d", &s->max[i][j]);
-  
+
   for(i = 0; i < m; i++)
     for(j = 0; j < n; j++) {
       scanf("%d", &s->allocation[i][j]);
@@ -226,7 +281,7 @@ int main(int argc, char* argv[])
     exit(-1);
   }
 
-  printf("Inital state is safe. Running.\n"); //If state was unsafe, we would have exited!
+  printf("Initial state is safe. Running.\n"); //If state was unsafe, we would have exited!
 
   /* Seed the random number generator */
   struct timeval tv;
@@ -245,8 +300,10 @@ int main(int argc, char* argv[])
   /* Free state memory */
   free(s->resource);
   free(s->available);
-  free(s->max);
-  free(s->allocation);
-  free(s->need);
+  free_matrix(s->max);
+  free_matrix(s->allocation);
+  free_matrix(s->need);
   free(s);
+
+  print("Succesfully finished");
 }
