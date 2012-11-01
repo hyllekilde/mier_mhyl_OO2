@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #include <sys/time.h>
 #include <pthread.h>
 
@@ -24,6 +25,50 @@ void Sleep(float wait_time_ms)
   // add randomness
   wait_time_ms = ((float)rand())*wait_time_ms / (float)RAND_MAX;
   usleep((int) (wait_time_ms * 1e3f)); // convert from ms to us
+}
+
+/* Is this state safe according to bankers algorithm? Returns 1 if yes, 0 if no */
+int is_safe_bankers(){
+  //Initialize variables
+  int i;
+  int j;
+  int *work;
+  int *finish;
+  work = malloc(n*sizeof(int));
+  memcpy(work, s->available, n*sizeof(int));
+  finish = malloc(m*sizeof(int));
+  for(i=0; i<m; i++) finish[i] = 0;
+
+  //Run bankers algorithm
+  i = find_banker_i(work,finish);
+  while(i != -1){
+    finish[i] = 1;
+    for(j=0; j<n; j++)
+      work[j] += s->allocation[i][j];  
+    //print_vector(work);
+    i = find_banker_i(work,finish);
+  }
+
+  //Read the result and return
+  for(i=0; i<m; i++){
+   if(finish[i] == 0) return 0;
+  }
+  return 1;
+}
+
+/* Return an index that satisfies condition 2 in bankers 
+algorithm, if no such index is found, return -1 */
+int find_banker_i(int *work, int *finish){
+  int i;
+  int j;
+  int need_cond;
+  for(i=0; i<m; i++){
+    need_cond = 1;
+    for(j=0; j<n; j++)
+      if(s->need[i][j] >= work[j]) need_cond = 0;
+    if(finish[i] == 0 && need_cond) return i;
+  }
+  return -1;
 }
 
 /* Allocate resources in request for process i, only if it 
@@ -99,7 +144,7 @@ int** allocate_matrix(int m, int n){
   return matrix;
 }
 
-void print_vector(int* v, int n){
+void print_vector(int* v){
   int i;
   printf("[");
   for(i=0; i<n; i++)
@@ -107,18 +152,15 @@ void print_vector(int* v, int n){
   printf("]\n");
 }
 
-void print_matrix(int** ma, int m, int n){
+void print_matrix(int** ma){
   int i;
   for(i=0; i<m; i++){
-    print_vector(ma[i],n);
+    print_vector(ma[i]);
   }
 }
 
 int main(int argc, char* argv[])
-{
-  //TODO: Read the file in?
-
-  /* Get size of current state as input */
+{ 
   int i, j; //Initialize counting variables
   scanf("%d", &m); //Read m (number of processes)
   scanf("%d", &n); //Read n (number of resources)
@@ -150,11 +192,11 @@ int main(int argc, char* argv[])
   printf("Processes: %d\n",m);
   printf("Resources: %d\n",n);
   printf("Resource vector:\n");
-  print_vector(s->resource,n);
+  print_vector(s->resource);
   printf("Max matrix:\n");
-  print_matrix(s->max,m,n);
+  print_matrix(s->max);
   printf("Allocation matrix:\n");
-  print_matrix(s->allocation,m,n);
+  print_matrix(s->allocation);
   printf("\n");
 
   /* Calcuate the need matrix */
@@ -173,12 +215,18 @@ int main(int argc, char* argv[])
   //Print calculations
   printf("##CALCULATIONS##\n");
   printf("Need matrix:\n");
-  print_matrix(s->need,m,n);
+  print_matrix(s->need);
   printf("Available vector:\n");
-  print_vector(s->available,n);
+  print_vector(s->available);
 
+  printf("Checking to see if initial state is safe:\n");
   /* If initial state is unsafe then terminate with error */
-  //TODO: Implement with bankers algorithm...
+  if(is_safe_bankers()<1){
+    printf("Initial state is unsafe or could not be determined. Exiting!\n");
+    exit(-1);
+  }
+
+  printf("Inital state is safe. Running.\n"); //If state was unsafe, we would have exited!
 
   /* Seed the random number generator */
   struct timeval tv;
@@ -195,7 +243,6 @@ int main(int argc, char* argv[])
   free(tid);
 
   /* Free state memory */
-  //TODO: Should free be more extensive
   free(s->resource);
   free(s->available);
   free(s->max);
@@ -203,5 +250,3 @@ int main(int argc, char* argv[])
   free(s->need);
   free(s);
 }
-
-//TODO: Implement print_vector and print_matrix
