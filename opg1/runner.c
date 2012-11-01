@@ -16,13 +16,13 @@ void *runner(void *threadarg); /* the thread */
 
 int main(int argc, char* argv[])
 {
-  clock_t start, finish;
   int amount = atoi(argv[1]);
   int nThreads = atoi(argv[2]);
   int interval = amount/nThreads;
   int i;
   pthread_t tid[nThreads]; /* the thread identifier */
 
+  //Check input
   if (argc !=3){
     fprintf(stderr,"usage: a.out #sum_to #num_threads\n");
     return -1;
@@ -40,33 +40,35 @@ int main(int argc, char* argv[])
     return -1;
   }
 
+  //Print input for convenience
   printf("sumNum: %d\n",amount);
   printf("tNumber: %d\n",nThreads);
   printf("interval: %d\n",interval);
 
+  //Initialize the sum to 0.0
   sum = 0.0;
 
-  start = clock();
-
+  //Calculate the sum with nThreads threads
   for(i = 0; i < nThreads; i++){
-    struct thread_data *thread_data;
-    thread_data = malloc(sizeof(struct thread_data));
+    struct thread_data *thread_data; //Struct to hold thread data as single argument
+    thread_data = malloc(sizeof(struct thread_data)); //Malloc the thread data so it is not overridden
+    //Calculate the start and end of calculation for this thread
     thread_data->start = (i*interval)+1;
     thread_data->end = (1+i)*interval;
-    pthread_attr_t attr; /* set of thread attributes */
-    /* get the default attributes */
+    pthread_attr_t attr; 
     pthread_attr_init(&attr);
-    /* create the thread */
-    pthread_create(&tid[i],&attr,runner,thread_data);
+    pthread_create(&tid[i],&attr,runner,thread_data); //Create the thread
   }
 
-  /* wait for the threads to exit */
+  //Catch the results from threads and calculate total sum
+  void  *res;
   for(i = 0; i < nThreads; i++){
-    pthread_join(tid[i],NULL);
+    pthread_join(tid[i],&res); //Return result in res
+    sum += *(long double *) res; //Add res to sum (must be casted)
+    free(res); //Res was malloc'ed in thread and can now be freed
   }
-  finish = clock();
 
-  printf("sum = %3lf in %3lf seconds\n",(double)sum,(double)(finish-start)/CLOCKS_PER_SEC);
+  printf("sum = %3lf\n",(double)sum);
   exit(0);
 }
 
@@ -74,16 +76,15 @@ int main(int argc, char* argv[])
 void *runner(void *threadarg)
 {
   struct thread_data *thread_data = threadarg;
-  long double *locSum = malloc(sizeof(long double));
-  *locSum = 0;
+  long double *locSum = malloc(sizeof(long double)); //Setup a local sum
+  *locSum = 0.0; //Initialize the local sum to 0
 
+  //Calculate the sum in the given interval
   int i;
   for(i=thread_data->start; i <= thread_data->end; i++){
     *locSum +=sqrt(i);
   }
   
-  pthread_mutex_lock(&sum_lock);
-  sum += *locSum;
-  pthread_mutex_unlock(&sum_lock);
-  pthread_exit(0);
+  free(threadarg); //This resource is now used and can be freed
+  pthread_exit((void *) locSum); //Return the partial result
 }

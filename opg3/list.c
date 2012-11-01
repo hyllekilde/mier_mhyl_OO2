@@ -20,7 +20,6 @@ List *list_new(void)
   l = (List *) malloc(sizeof(List));
 
   /* insert root element which should never be removed */
-  //TODO: Why not use node_new function?
   l->first = l->last = (Node *) malloc(sizeof(Node));
   l->first->elm = NULL;
   l->first->next = NULL;
@@ -34,13 +33,15 @@ List *list_new(void)
 /* list_add: add node n to list l as the last element */
 void list_add(List *l, Node *n)
 {
+  //Check if values are sane
   if(&l == NULL)
   {
     printf("Illegal pass of NULL as list to list_add!");
     return;
   }
-  //printf("##Running list_add on list l length %d\n",l->len);
   if(n==NULL) return; //Not allowed to add NULL elements - ignore
+
+  //Lock the list, and perform operation
   pthread_mutex_lock(&l->lock);
   l->last->next = n; //Make the last element point to the new node, which makes the new node the last node
   l->last = n; //Tell the list about the new last node
@@ -51,11 +52,14 @@ void list_add(List *l, Node *n)
 /* list_remove: remove and return the first (non-root) element from list l */
 Node *list_remove(List *l)
 {
+  //Check if values are sane
   if(&l == NULL)
   {
     printf("Illegal pass of NULL as list to list_remove!");
     return NULL;
   }
+
+  //Loock the lsit and perform operation
   pthread_mutex_lock(&l->lock);
   Node *n = l->first->next; //Get the result, eg. first node after first, NULL if the list is empty
   if(n != NULL)

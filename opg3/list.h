@@ -15,10 +15,10 @@ typedef struct node {
 } Node;
 
 typedef struct list {
-  int len;
   Node *first;
   Node *last;
-  pthread_mutex_t lock;
+  int len; //Counter to keep track of list size
+  pthread_mutex_t lock; //Mutex lock pr. list basis
 } List;
 
 /* functions */
