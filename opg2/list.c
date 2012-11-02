@@ -59,7 +59,7 @@ Node *list_remove(List *l)
     return NULL;
   }
 
-  //Loock the lsit and perform operation
+  //Loock the list and perform operation
   pthread_mutex_lock(&l->lock);
   Node *n = l->first->next; //Get the result, eg. first node after first, NULL if the list is empty
   if(n != NULL)
