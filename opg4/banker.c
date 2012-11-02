@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdbool.h>
 #include <unistd.h>
+
+//A struct to contain the state of the program
 typedef struct state {
   int *resource;
   int *available;
@@ -16,29 +18,31 @@ typedef struct state {
 } State;
 
 // Global variables
-int m, n;
+int m, n; //m: number of processes. n: number of resources
 State *s = NULL;
 
 // Mutex for access to state.
 pthread_mutex_t state_mutex;
 pthread_mutexattr_t attr;
+
 /* Random sleep function */
 void Sleep(float wait_time_ms)
 {
-  // add randomness
   wait_time_ms = ((float)rand())*wait_time_ms / (float)RAND_MAX;
   usleep((int) (wait_time_ms * 1e3f)); // convert from ms to us
 }
 
+//Allocates memory for a matrix
 int** allocate_matrix(int m, int n){
-  int** matrix = malloc(m * sizeof(int*));
+  int** matrix = malloc(m * sizeof(int*)); //Allocate the vector
   int i;
   for(i=0; i<m; i++){
-    matrix[i] = malloc(n * sizeof(int));
+    matrix[i] = malloc(n * sizeof(int)); //Allocate each vector contained in the first vector
   }
   return matrix;
 }
 
+//Print a vector
 void print_vector(int* v){
   int i;
   printf("[");
@@ -47,6 +51,7 @@ void print_vector(int* v){
   printf("]\n");
 }
 
+//Print a matrix
 void print_matrix(int** ma){
   int i;
   for(i=0; i<m; i++){
@@ -54,6 +59,7 @@ void print_matrix(int** ma){
   }
 }
 
+//Free the memory of a matrix
 void free_matrix(int** matrix){
   free(*matrix);
   free(matrix);
@@ -76,20 +82,20 @@ int is_safe_bankers(){
   int *finish;
   int res = 1;
   work =  malloc(n*sizeof(int));
-  memcpy(work, s->available, n*sizeof(int));
+  memcpy(work, s->available, n*sizeof(int)); //Copy the available vector to the work vector
   finish =  malloc(m*sizeof(int));
-  for(i=0; i<m; i++) finish[i] = 0;
+  for(i=0; i<m; i++) finish[i] = 0; //Set all elements in finish to false
 
   //Run bankers algorithm
   i = find_banker_i(work,finish);
-  while(i != -1){
+  while(i != -1){ //Run until no elements satisfies condition in find_banker_i
     finish[i] = 1;
     for(j=0; j<n; j++)
       work[j] += s->allocation[i][j];
-    i = find_banker_i(work,finish);
+    i = find_banker_i(work,finish); //Find new index that satisfies the conditions
   }
 
-  //Read the result and return
+  //Set result to false if any element is false
   for(i=0; i<m; i++)
     if(finish[i] == 0) res = 0;
 
@@ -97,6 +103,7 @@ int is_safe_bankers(){
   free(finish);
   free(work);
 
+  //Return the result
   return res;
 }
 
@@ -115,6 +122,7 @@ int find_banker_i(int *work, int *finish){
    results in a safe state and return 1, else return 0 */
 int resource_request(int i, int *request)
 {
+  //Lock mutex
   pthread_mutex_lock(&state_mutex);
 
   //if the request resources is less than or equal to the available resources, allocate resources
@@ -136,6 +144,7 @@ int resource_request(int i, int *request)
     }
   }
 
+  //Unlock mutex
   pthread_mutex_unlock(&state_mutex);
   return 0;
 }
@@ -143,14 +152,18 @@ int resource_request(int i, int *request)
 /* Release the resources in request for process i */
 void resource_release(int i, int *request)
 {
+  //Lock mutex
   pthread_mutex_lock(&state_mutex);
 
+  //Release the requested resources
   int j;
   for(j=0;j<n;j++){
     s->available[j] += request[j];
     s->allocation[i][j] -= request[j];
     s->need[i][j] += request[j];
   }
+
+  //Unlock mutex
   pthread_mutex_unlock(&state_mutex);
 }
 
@@ -206,8 +219,10 @@ void *process_thread(void *param)
 
 int main(int argc, char* argv[])
 {
+  //Initialize the mutex
   pthread_mutexattr_init(&attr);
   pthread_mutex_init(&state_mutex,&attr);
+
   int i, j; //Initialize counting variables
   scanf("%d", &m); //Read m (number of processes)
   scanf("%d", &n); //Read n (number of resources)
