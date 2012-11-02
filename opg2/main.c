@@ -31,9 +31,8 @@ void *addnodes(void *data){
   struct add_nodes_data *dat = data;
   int i;
   for(i=0; i<dat->count; i++){
-    //Set data
     char label[50];
-    sprintf(label,"%s%d",dat->mark,i);
+    sprintf(label,"%s%d",dat->mark,i); //Construct a label to identify the data and where it's coming from
     printf("Added element %s\n",label);
     list_add(dat->l, node_new_str(label)); //Add node
     sleep(1);
@@ -51,7 +50,7 @@ void *removenodes(void *data){
       printf("Removed element %s\n",n->elm);
     else 
       printf("Tried to remove element from empty list\n");
-    sleep(3);
+    sleep(2);
   }
 }
 
@@ -64,7 +63,7 @@ int main(int argc, char* argv[])
   struct add_nodes_data add_data;
   pthread_t tid1;
   add_data.mark = "s";
-  add_data.count = 14;
+  add_data.count = 10;
   add_data.l = fifo;
   pthread_attr_t attr1;
   pthread_attr_init(&attr1);
@@ -79,10 +78,9 @@ int main(int argc, char* argv[])
   pthread_attr_init(&attr2);
   pthread_create(&tid2, &attr2, removenodes, &rem_data);
 
-  //Join threads
+  //Join threads (makes the program wait for them to terminate)
   pthread_join(tid1, NULL);
   pthread_join(tid2, NULL);  
 
   return 0;
 }
-
